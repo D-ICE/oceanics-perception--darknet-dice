@@ -55,3 +55,8 @@ include/darknet/
 uselib
 uselib_track
 darknet
+
+# D-ICE artifacts
+.idea*
+cmake-build*
+d-build/
