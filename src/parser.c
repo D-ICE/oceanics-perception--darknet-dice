@@ -1660,9 +1660,13 @@ network parse_network_cfg_custom(char *filename, int batch, int time_steps)
 
     net.outputs = get_network_output_size(net);
     net.output = get_network_output(net);
-    avg_outputs = avg_outputs / avg_counter;
     fprintf(stderr, "Total BFLOPS %5.3f \n", bflops);
-    fprintf(stderr, "avg_outputs = %d \n", avg_outputs);
+    if (avg_counter == 0) {
+        fprintf(stderr, "\n\tWARNING !!! avg_counter = %d \n\n", avg_counter);
+    } else {
+        avg_outputs = avg_outputs / avg_counter;
+        fprintf(stderr, "avg_outputs = %d \n", avg_outputs);
+    }
 #ifdef GPU
     get_cuda_stream();
     get_cuda_memcpy_stream();
