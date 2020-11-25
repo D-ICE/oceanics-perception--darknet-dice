@@ -1010,6 +1010,7 @@ LIB_API void do_nms_obj(detection *dets, int total, int classes, float thresh);
 LIB_API void diounms_sort(detection *dets, int total, int classes, float thresh, NMS_KIND nms_kind, float beta1);
 
 // network.h
+LIB_API float *network_predict_allocated(network net, float *input);
 LIB_API float *network_predict(network net, float *input);
 LIB_API float *network_predict_ptr(network *net, float *input);
 LIB_API detection *get_network_boxes(network *net, int w, int h, float thresh, float hier, int *map, int relative, int *num, int letter);
@@ -1093,6 +1094,20 @@ LIB_API int fill_remaining_id(detection *new_dets, int new_dets_num, int new_tra
 
 // gemm.h
 LIB_API void init_cpu();
+
+// mantis_kernel_warpper.h
+
+#ifdef GPU
+LIB_API void cudaWarpper_freeHost(void* ptr);
+LIB_API void cudaWarpper_free(void* ptr);
+LIB_API void cudaWarpper_malloc(void** ptr, size_t sz);
+LIB_API image cudaWarpper_make_image_host(int w, int h, int c);
+LIB_API void mat_to_image_gpu(const int w, const int h, const int c, const int step, unsigned char *mat_data_gpu, float* image_data_gpu);
+LIB_API void letterbox_image_gpu(const int src_w, const int src_h, const int dst_w, const int dst_h, const int c, float* src_img, float* dst_img);
+
+LIB_API void cudaWarpper_cp_host_to_device(void*, void*, size_t);
+LIB_API void cudaWarpper_cp_device_to_host(void*, void*, size_t);
+#endif
 
 #ifdef __cplusplus
 }
