@@ -798,6 +798,14 @@ image make_image(int w, int h, int c)
     return out;
 }
 
+#ifdef GPU
+image make_image_host(int w, int h, int c){
+  image out = make_empty_image(w,h,c);
+  cudaHostAlloc(&out.data, w*h*c*sizeof(float), cudaHostAllocDefault);
+  return out;
+}
+#endif
+
 image make_random_image(int w, int h, int c)
 {
     image out = make_empty_image(w,h,c);
