@@ -317,6 +317,12 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         }
         printf("\n %d: %f, %f avg loss, %f rate, %lf seconds, %d images, %f hours left\n", iteration, loss, avg_loss, get_current_rate(net), (what_time_is_it_now() - time), iteration*imgs, avg_time);
         fflush(stdout);
+        
+        FILE* performance_file = fopen("performance_log.txt", "a");
+        if(!performance_file)
+            performance_file=fopen("performance_log.txt", "w+");
+        fprintf(performance_file, "%f %f\n", loss, avg_loss);
+        fclose(performance_file);
 
         int draw_precision = 0;
         if (calc_map && (iteration >= next_map_calc || iteration == net.max_batches)) {
