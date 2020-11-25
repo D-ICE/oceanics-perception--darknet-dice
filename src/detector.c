@@ -32,6 +32,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
 
     network net_map;
     if (calc_map) {
+    	printf("Map activated !\n");
         FILE* valid_file = fopen(valid_images, "r");
         if (!valid_file) {
             printf("\n Error: There is no %s file for mAP calculation!\n Don't use -map flag.\n Or set valid=%s in your %s file. \n", valid_images, train_images, datacfg);
@@ -298,8 +299,9 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         const int iteration = get_current_iteration(net);
         //i = get_current_batch(net);
 
-        int calc_map_for_each = 4 * train_images_num / (net.batch * net.subdivisions);  // calculate mAP for each 4 Epochs
-        calc_map_for_each = fmax(calc_map_for_each, 100);
+        //int calc_map_for_each = 4 * train_images_num / (net.batch * net.subdivisions);  // calculate mAP for each 4 Epochs
+        //calc_map_for_each = fmax(calc_map_for_each, 100);
+        int calc_map_for_each = 1 * train_images_num / (net.batch * net.subdivisions);  // calculate mAP every Epoch
         int next_map_calc = iter_map + calc_map_for_each;
         next_map_calc = 1000;// fmax(next_map_calc, net.burn_in);
         //next_map_calc = fmax(next_map_calc, 400);
@@ -1263,6 +1265,8 @@ float validate_detector_map(char *datacfg, char *cfgfile, char *weightfile, floa
 
     free(truth_flags);
 
+	double* class_precisions = (double*)calloc(classes, sizeof(double));
+    double* class_recalls = (double*)calloc(classes, sizeof(double));
 
     double mean_average_precision = 0;
 
@@ -1323,6 +1327,9 @@ float validate_detector_map(char *datacfg, char *cfgfile, char *weightfile, floa
         float class_recall = (float)tp_for_thresh_per_class[i] / ((float)tp_for_thresh_per_class[i] + (float)(truth_classes_count[i] - tp_for_thresh_per_class[i]));
         //printf("Precision = %1.2f, Recall = %1.2f, avg IOU = %2.2f%% \n\n", class_precision, class_recall, avg_iou_per_class[i]);
 
+		class_precisions[i] = class_precision;
+        class_recalls[i] = class_recall;
+
         mean_average_precision += avg_precision;
     }
 
@@ -1341,6 +1348,20 @@ float validate_detector_map(char *datacfg, char *cfgfile, char *weightfile, floa
     else printf("used Area-Under-Curve for each unique Recall \n");
 
     printf(" mean average precision (mAP@%0.2f) = %f, or %2.2f %% \n", iou_thresh, mean_average_precision, mean_average_precision * 100);
+    
+    // Saving map and per-class precision / recall
+
+    FILE* validationFile = fopen("validation.txt", "a");
+    if(!validationFile)
+        validationFile=fopen("validation.txt", "w+");
+    fprintf(validationFile, "%f", mean_average_precision);
+    for(i=0; i<classes; i++)
+        fprintf(validationFile, " %f %f", class_precisions[i], class_recalls[i]);
+    fprintf(validationFile, "\n");
+    fclose(validationFile);
+
+	free(class_precisions);
+    free(class_recalls);
 
     for (i = 0; i < classes; ++i) {
         free(pr[i]);
