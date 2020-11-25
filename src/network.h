@@ -92,6 +92,7 @@ typedef struct network_state {
 */
 
 #ifdef GPU
+float *network_predict_gpu_allocated(network net, float *input);
 float train_networks(network *nets, int n, data d, int interval);
 void sync_nets(network *nets, int n, int interval);
 float train_network_datum_gpu(network net, float *x, float *y);
